@@ -15,5 +15,6 @@ public interface RestaurantRepository extends MongoRepository<Restaurant, String
 
     // "find all restaurants where both the cuisine and priceLevel fields match"
     List<Restaurant> findByCuisineAndPriceLevelLessThanEqual(String cuisine, int priceLevel);
+    List<Restaurant> findByVibe(String vibe);
 
 }

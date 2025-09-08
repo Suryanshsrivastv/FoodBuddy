@@ -28,20 +28,22 @@ public class RestaurantService {
 
         System.out.println("---- Database seeded with sample restaurants ----");
     }
-    public List<Restaurant> searchRestaurants(Optional<String> cuisine, Optional<Integer> maxPriceLevel) {
-
+    public List<Restaurant> searchRestaurants(Optional<String> cuisine, Optional<Integer> maxPriceLevel, Optional<String> vibe) {
         boolean hasCuisine = cuisine.isPresent() && !cuisine.get().isBlank();
         boolean hasPrice = maxPriceLevel.isPresent();
+        boolean hasVibe = vibe.isPresent() && !vibe.get().isBlank();
 
-        if (hasCuisine && hasPrice) {
-            return restaurantRepository.findByCuisineAndPriceLevelLessThanEqual(cuisine.get(), maxPriceLevel.get());
-        } else if (hasCuisine) {
+        // For simplicity in this example, we'll prioritize filters.
+        // A more advanced implementation might build a single, more complex query.
+        if (hasCuisine) {
             return restaurantRepository.findByCuisine(cuisine.get());
+        } else if (hasVibe) {
+            return restaurantRepository.findByVibe(vibe.get());
         } else if (hasPrice) {
             return restaurantRepository.findByPriceLevelLessThanEqual(maxPriceLevel.get());
         } else {
-            // If no criteria, return all
-            return restaurantRepository.findAll();
+            // If the AI returns no criteria, return nothing to avoid showing all restaurants.
+            return List.of();
         }
     }
     public List<Restaurant> getAllRestaurants() {

@@ -17,7 +17,7 @@ import java.util.Optional;
 @RequestMapping("/api/restaurants")
 public class HomeController {
     @Autowired
-    RestaurantService restaurantService;
+    private RestaurantService restaurantService;
     @Autowired
     private GeminiAiService geminiAiService;
     @GetMapping("/home")
@@ -26,27 +26,30 @@ public class HomeController {
     }
     @GetMapping("/test")
     public String testAiService() {
-        String criteria = geminiAiService.testGemini();
+        String criteria = geminiAiService.getAnswer("Explain how AI works in a few words");
         return criteria;
     }
     @GetMapping("/")
     public List<Restaurant> getAllRestaurants() {
         return restaurantService.getAllRestaurants();
     }
-//    @GetMapping("/suggest")
-//    public List<Restaurant> suggestRestaurants(@RequestParam String query) {
-//        // 1. Call our new manual AI service
-//        SearchCriteria criteria = geminiAiService.getSearchCriteria(query);
-//
-//        return restaurantService.searchRestaurants(
-//                Optional.ofNullable(criteria.cuisine()),
-//                Optional.ofNullable(criteria.maxPriceLevel())
-//        );
-//    }
-    @GetMapping("/search")
-    public List<Restaurant> searchRestaurants(
-            @RequestParam(required = false) Optional<String> cuisine,
-            @RequestParam(required = false) Optional<Integer> maxPriceLevel) {
-        return restaurantService.searchRestaurants(cuisine, maxPriceLevel);
+
+    @GetMapping("/suggest")
+    public List<Restaurant> suggestRestaurants(@RequestParam String query) {
+        // 1. Let the AI extract structured criteria from the user's query
+        SearchCriteria criteria = geminiAiService.getSearchCriteria(query);
+
+        // 2. Use the extracted criteria to search the database
+        return restaurantService.searchRestaurants(
+                Optional.ofNullable(criteria.cuisine()),
+                Optional.ofNullable(criteria.maxPriceLevel()),
+                Optional.ofNullable(criteria.vibe())
+        );
     }
+//    @GetMapping("/search")
+//    public List<Restaurant> searchRestaurants(
+//            @RequestParam(required = false) Optional<String> cuisine,
+//            @RequestParam(required = false) Optional<Integer> maxPriceLevel) {
+//        return restaurantService.searchRestaurants(cuisine, maxPriceLevel);
+//    }
 }
