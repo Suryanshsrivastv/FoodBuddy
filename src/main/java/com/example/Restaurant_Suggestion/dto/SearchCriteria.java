@@ -1,4 +1,17 @@
 package com.example.Restaurant_Suggestion.dto;
-public record SearchCriteria(String cuisine, Integer maxPriceLevel, String vibe) {
+
+import java.util.List;
+
+public record SearchCriteria(
+        List<String> cuisines,
+        Integer maxPrice, // averageCostPerPerson
+        List<String> dietaryOptions,
+        Boolean hasParking,
+        Boolean isWheelchairAccessible,
+        Boolean acceptsReservations,
+        List<String> ambienceTags,
+        List<String> occasionTags,
+        Boolean servesAlcohol
+) {
 }
 

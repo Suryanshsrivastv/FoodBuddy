@@ -2,13 +2,12 @@ package com.example.Restaurant_Suggestion.Controller;
 
 import com.example.Restaurant_Suggestion.Models.Restaurant;
 import com.example.Restaurant_Suggestion.Service.GeminiAiService;
+import com.example.Restaurant_Suggestion.Service.RankingService;
 import com.example.Restaurant_Suggestion.Service.RestaurantService;
+import com.example.Restaurant_Suggestion.dto.RankedRestaurant;
 import com.example.Restaurant_Suggestion.dto.SearchCriteria;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
@@ -20,6 +19,9 @@ public class HomeController {
     private RestaurantService restaurantService;
     @Autowired
     private GeminiAiService geminiAiService;
+
+    @Autowired
+    private RankingService rankingService;
     @GetMapping("/home")
     private String home() {
         return "Welcome to Restaurant Suggestion API";
@@ -35,17 +37,22 @@ public class HomeController {
     }
 
     @GetMapping("/suggest")
-    public List<Restaurant> suggestRestaurants(@RequestParam String query) {
-        // 1. Let the AI extract structured criteria from the user's query
+    public List<RankedRestaurant> suggestRestaurants(@RequestParam String query) {
+        // Step 1: AI extracts criteria
         SearchCriteria criteria = geminiAiService.getSearchCriteria(query);
 
-        // 2. Use the extracted criteria to search the database
-        return restaurantService.searchRestaurants(
-                Optional.ofNullable(criteria.cuisine()),
-                Optional.ofNullable(criteria.maxPriceLevel()),
-                Optional.ofNullable(criteria.vibe())
-        );
+        // Step 2: Service finds matching restaurants
+        List<Restaurant> filteredRestaurants = restaurantService.searchRestaurants(criteria);
+
+        // Step 3: Rank the results
+        return rankingService.rankRestaurants(filteredRestaurants , criteria);
     }
+
+    @GetMapping("/filter")
+    public List<Restaurant> filterRestaurants(@ModelAttribute SearchCriteria criteria) {
+        return restaurantService.searchRestaurants(criteria);
+    }
+
 //    @GetMapping("/search")
 //    public List<Restaurant> searchRestaurants(
 //            @RequestParam(required = false) Optional<String> cuisine,

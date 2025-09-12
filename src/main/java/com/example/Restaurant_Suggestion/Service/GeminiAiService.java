@@ -16,6 +16,8 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 public class GeminiAiService {
@@ -56,13 +58,24 @@ public class GeminiAiService {
     }
     public SearchCriteria getSearchCriteria(String userQuery) {
         String prompt = """
-            You are an expert at extracting restaurant search criteria from a user's query.
-            From the query: "%s", extract the cuisine, the maximum price level, and the vibe.
-            The price level should be an integer from 1 to 4, where 1 is cheap and 4 is very expensive.
-            If a cuisine, price, or vibe is not mentioned, the value for that key should be null.
-            Respond with ONLY the JSON object, nothing else. Do not use markdown.
-            Example: {"cuisine": "Cafe", "maxPriceLevel": 2, "vibe": "casual"}
-            """;
+           You are an expert at extracting restaurant search criteria from a user's query into a JSON object.
+    From the query: "%s", extract the following fields.
+    
+    IMPORTANT: All list items for cuisines, dietaryOptions, ambienceTags, and occasionTags MUST be lowercase and use underscores for spaces (e.g., "date_night", "south_indian").
+    
+    - cuisines (list of strings): e.g., "south_indian", "chinese"
+    - maxPrice (integer): Interpret "cheap" as 800, "mid-range" as 1500, "expensive" as 3000.
+    - dietaryOptions (list of strings): e.g., "vegetarian", "vegan", "gluten_free".
+    - hasParking (boolean): true if the user mentions parking.
+    - isWheelchairAccessible (boolean): true if user mentions wheelchair access.
+    - acceptsReservations (boolean): true if user mentions booking.
+    - ambienceTags (list of strings): e.g., "quiet", "live_music", "outdoor_seating".
+    - occasionTags (list of strings): e.g., "date_night", "family_dinner", "business_lunch".
+    - servesAlcohol (boolean): true if user mentions alcohol, bar, or cocktails.
+    
+    If a field is not mentioned, its value should be null.
+    Respond with ONLY the JSON object, nothing else. Do not use markdown.
+    """;
 
         // 2. Construct the request payload, just like your working example
         Map<String, Object> requestBody = Map.of(
@@ -86,13 +99,29 @@ public class GeminiAiService {
             JsonNode root = objectMapper.readTree(rawResponse);
             String content = root.path("candidates").get(0).path("content").path("parts").get(0).path("text").asText();
 
-            return objectMapper.readValue(content, SearchCriteria.class);
+            System.out.println("Raw AI Content: " + content);
+            String cleanJson = extractJson(content);
+            if (cleanJson == null) {
+                System.err.println("Could not find a valid JSON object in the AI response.");
+                System.err.println("Raw AI Content: " + content);
+                return new SearchCriteria(null, null, null, null, null, null, null, null, null);
+            }
+
+            return objectMapper.readValue(cleanJson, SearchCriteria.class);
 
         } catch (Exception e) {
             System.err.println("Error processing Gemini API call: " + e.getMessage());
-            // Return empty criteria so the app doesn't crash
-            return new SearchCriteria(null, null, null);
+            return new SearchCriteria(null, null, null, null, null, null, null, null, null);
         }
+    }
+    private String extractJson(String text) {
+        // This regex finds a string that starts with { and ends with }, covering nested brackets.
+        Pattern pattern = Pattern.compile("\\{.*\\}", Pattern.DOTALL);
+        Matcher matcher = pattern.matcher(text);
+        if (matcher.find()) {
+            return matcher.group();
+        }
+        return null; // Return null if no JSON object is found
     }
 
 }
