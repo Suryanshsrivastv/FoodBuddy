@@ -121,7 +121,7 @@ public class GeminiAiService {
         if (matcher.find()) {
             return matcher.group();
         }
-        return null; // Return null if no JSON object is found
+        return null;
     }
 
 }
