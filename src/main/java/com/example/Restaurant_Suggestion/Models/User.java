@@ -1,20 +1,24 @@
 package com.example.Restaurant_Suggestion.Models;
 
+import com.example.Restaurant_Suggestion.config.Role;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Document(collection = "users")
 public class User implements UserDetails {
 
     @Id
     private String id;
-
+    private Set<Role> roles;
     // --- Core Credentials ---
     @Indexed(unique = true)
     private String username;
@@ -68,14 +72,18 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of();
+        return this.roles.stream()
+                .map(role -> new SimpleGrantedAuthority(role.name()))
+                .collect(Collectors.toList());
     }
-
     @Override
     public String getPassword() {
         return this.password;
     }
     public void setPassword(String password) { this.password = password; }
+
+    public Set<Role> getRoles() { return roles; }
+    public void setRoles(Set<Role> roles) { this.roles = roles; }
 
     @Override
     public String getUsername() {

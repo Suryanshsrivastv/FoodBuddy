@@ -104,14 +104,14 @@ public class GeminiAiService {
             if (cleanJson == null) {
                 System.err.println("Could not find a valid JSON object in the AI response.");
                 System.err.println("Raw AI Content: " + content);
-                return new SearchCriteria(null, null, null, null, null, null, null, null, null);
+                return new SearchCriteria(null, null, null, null, null, null, null, null, null,null,null,null,null);
             }
 
             return objectMapper.readValue(cleanJson, SearchCriteria.class);
 
         } catch (Exception e) {
             System.err.println("Error processing Gemini API call: " + e.getMessage());
-            return new SearchCriteria(null, null, null, null, null, null, null, null, null);
+            return new SearchCriteria(null, null, null, null, null, null, null, null, null,null,null,null,null);
         }
     }
     private String extractJson(String text) {

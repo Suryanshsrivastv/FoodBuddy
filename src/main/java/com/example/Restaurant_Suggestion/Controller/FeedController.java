@@ -3,6 +3,7 @@ package com.example.Restaurant_Suggestion.Controller;
 import com.example.Restaurant_Suggestion.Service.FeedService;
 import com.example.Restaurant_Suggestion.dto.RankedRestaurant;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;

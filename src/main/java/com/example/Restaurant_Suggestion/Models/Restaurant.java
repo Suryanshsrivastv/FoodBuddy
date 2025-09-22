@@ -1,6 +1,9 @@
 package com.example.Restaurant_Suggestion.Models;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
+import org.springframework.data.mongodb.core.index.GeoSpatialIndexType;
+import org.springframework.data.mongodb.core.index.GeoSpatialIndexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.List;
@@ -10,33 +13,19 @@ public class Restaurant {
 
     @Id
     private String id;
-
-    private String name;
-    private String address;
-    private String city;
-    private String cuisine;
+    private String name, address, city, cuisine, vibe;
     private double rating;
     private int priceLevel;
-    private String vibe;
-
     private int averageCostPerPerson;
-    private List<String> cuisines; // Changed to a list
-    private List<String> specialtyDishes;
-    private List<String> dietaryOptions; // e.g., ["VEGETARIAN", "VEGAN", "GLUTEN_FREE"]
-    private boolean hasParking;
-    private boolean isWheelchairAccessible;
-    private boolean acceptsReservations;
-    private List<String> ambienceTags; // e.g., ["QUIET", "LIVE_MUSIC", "OUTDOOR_SEATING"]
-    private List<String> occasionTags; // e.g., ["DATE_NIGHT", "FAMILY_DINNER"]
-    private boolean hasDelivery;
-    private List<String> deliveryPartners; // e.g., ["Zomato", "Swiggy"]
-    private boolean servesAlcohol;
-    // A no-argument constructor (required by many frameworks)
-    public Restaurant() {
-    }
-    // A parameterized constructor
+    private List<String> cuisines, specialtyDishes, dietaryOptions, ambienceTags, occasionTags, deliveryPartners;
+    private boolean hasParking, isWheelchairAccessible, acceptsReservations, hasDelivery, servesAlcohol;
 
-    public Restaurant(String name, String address, String city, String cuisine, double rating, int priceLevel, String vibe, int averageCostPerPerson, List<String> cuisines, List<String> specialtyDishes, List<String> dietaryOptions, boolean hasParking, boolean isWheelchairAccessible, boolean acceptsReservations, List<String> ambienceTags, List<String> occasionTags, boolean hasDelivery, List<String> deliveryPartners, boolean servesAlcohol) {
+    @GeoSpatialIndexed(type = GeoSpatialIndexType.GEO_2DSPHERE)
+    private GeoJsonPoint location;
+
+    public Restaurant() {}
+
+    public Restaurant(String name, String address, String city, String cuisine, double rating, int priceLevel, String vibe, int averageCostPerPerson, List<String> cuisines, List<String> specialtyDishes, List<String> dietaryOptions, boolean hasParking, boolean isWheelchairAccessible, boolean acceptsReservations, List<String> ambienceTags, List<String> occasionTags, boolean hasDelivery, List<String> deliveryPartners, boolean servesAlcohol, GeoJsonPoint location) {
         this.name = name;
         this.address = address;
         this.city = city;
@@ -56,6 +45,14 @@ public class Restaurant {
         this.hasDelivery = hasDelivery;
         this.deliveryPartners = deliveryPartners;
         this.servesAlcohol = servesAlcohol;
+        this.location = location;
+    }
+    public GeoJsonPoint getLocation() {
+        return location;
+    }
+
+    public void setLocation(GeoJsonPoint location) {
+        this.location = location;
     }
 
     public String getId() {

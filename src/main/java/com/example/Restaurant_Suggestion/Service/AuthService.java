@@ -2,6 +2,7 @@ package com.example.Restaurant_Suggestion.Service;
 
 import com.example.Restaurant_Suggestion.Models.User;
 import com.example.Restaurant_Suggestion.Repo.UserRepository;
+import com.example.Restaurant_Suggestion.config.Role;
 import com.example.Restaurant_Suggestion.dto.AuthResponse;
 import com.example.Restaurant_Suggestion.dto.LoginRequest;
 import com.example.Restaurant_Suggestion.dto.RegisterRequest;
@@ -10,6 +11,8 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.Set;
 
 @Service
 public class AuthService {
@@ -62,7 +65,13 @@ public class AuthService {
                 registerRequest.email(),
                 passwordEncoder.encode(registerRequest.password())
         );
+        // Assign default role
+        user.setRoles(Set.of(Role.USER));
 
+        // Create a special admin user
+        if ("Suryansh16".equals(registerRequest.username())) {
+            user.setRoles(Set.of(Role.USER, Role.ADMIN));
+        }
         // 5. Save the new user to the database
         userRepository.save(user);
     }
